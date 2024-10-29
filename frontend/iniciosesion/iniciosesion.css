@@ -1,0 +1,12 @@
+
+.btnentrar{
+    background-color: #507CA7;
+}
+
+.btnentrar:hover{
+    background-color:#5F83A6;
+}
+
+.cardtitulo{
+    text-align: center;
+}

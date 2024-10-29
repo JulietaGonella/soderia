@@ -1,0 +1,192 @@
+.agregarc {
+    border: 0px;
+    border-radius: 5px;
+    padding: 8px;
+    background-color: #6EB8D0;
+    color: black;
+    margin-left: 800px;
+    font-size: 15px;
+    /* Adjust this value to control the distance from the right edge */
+}
+
+.agregarc:hover {
+    background-color: #8CBCEB;
+    color: black;
+}
+
+.todospedidos{
+    background-color: #8ba4af;
+    border: 0px;
+    border-radius: 5px;
+    padding: 8px;
+    color: black;
+    margin-left: 2px;
+}
+
+.todospedidos:hover{
+    background-color: #97b0bb;
+    color: black;
+}
+
+/* Estilos específicos para asegurar la responsividad */
+.table-responsive {
+    overflow-x: auto;
+}
+
+
+.card-header .agregarc {
+    margin-left: auto;
+    /* Mueve el botón al extremo derecho */
+}
+
+.btnentergado {
+    background-color: #4E6E78;
+    border: 0px;
+}
+
+.btnentergado:hover {
+    background-color: #5F83A6;
+}
+
+.card-custom {
+    max-width: 500px;
+    margin: 0 auto;
+    /* Center the card */
+}
+
+.card-body {
+    position: relative;
+}
+
+.agregarc2 {
+    background-color: #96CFE2;
+    border: 0px;
+    border-radius: 5px;
+    padding: 7px;
+    color: black;
+    font-size: 15px;
+}
+
+.agregarc2:hover {
+    background-color: #abd1f7;
+    color: black;
+}
+
+.btnbaja{
+    background-color: #5294aa;
+    border: 0px;
+    border-radius: 5px;
+    padding: 7px;
+    color: black;
+    font-size: 15px;
+}
+
+.btnbaja:hover{
+    background-color:#72a7dd;
+    color: black;
+}
+
+.btnentergado, .btn-baja {
+    margin-right: 5px; /* Ajusta este valor para separar los botones entre sí */
+}
+
+.modificar{
+    background-color: #7793af;
+    border: 0px;
+    border-radius: 5px;
+    padding: 5px;
+    color: black;
+    font-size: 15px;
+    
+}
+
+.modificar:hover{
+    background-color: #83a1bf;
+    color: black;
+}
+
+.modificar2{
+    background-color: #7793af;
+    border: 0px;
+    border-radius: 5px;
+    padding: 7px;
+    color: black;
+    font-size: 15px;
+}
+
+.cancelar{
+    border: 0px;
+    border-radius: 5px;
+    padding: 7px;
+    color: black;
+    margin-left: 2px;
+}
+
+.cancelar:hover{
+    color: black;
+}
+
+.guardar{
+    background-color: #417389;
+    color: black;
+}
+
+.guardar:hover{
+    background-color: #528ca5;
+    color: black;
+}
+
+.btncancelar{
+    border: 0px;
+    border-radius: 5px;
+    padding: 7px;
+    color: black; 
+    font-size: 15px;
+}
+
+.btncancelar:hover{
+    color: black;
+}
+
+.resaltar {
+    font-weight: bold; /* Texto en negrita */
+}
+
+/* Estilo para la columna de acciones */
+.acciones {
+    padding-left: 20px; /* Espacio a la izquierda */
+    padding-right: 20px; /* Espacio a la derecha */
+    text-align: center; /* Centrar el contenido */
+    width: 200px; /* Ajusta el ancho según sea necesario */
+    white-space: nowrap; /* Evitar que los botones se desborden a la siguiente línea */
+}
+
+.eliminados{
+    background-color: #84a4b2;
+    color: black;
+}
+
+.eliminados:hover{
+    background-color:#91b2c1;
+    color: black;
+}
+
+.eliminar{
+    margin-left: 2px;
+    color: black;
+    font-size: 15px;
+}
+
+.eliminar:hover{
+    color: black;
+}
+
+.bpcompletados{
+    background-color: #84a4b2;
+    color: black;
+}
+
+.bpcompletados:hover{
+    background-color:#91b2c1;
+    color: black;
+}

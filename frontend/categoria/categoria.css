@@ -1,0 +1,53 @@
+.agregarc {
+    border: 0px;
+    border-radius: 5px;
+    padding: 7px;
+    background-color: #6EB8D0;
+    color: black;
+}
+
+.agregarc:hover {
+    background-color: #8CBCEB;
+    color: black;
+}
+
+.modificar{
+    background-color: #7793af;
+    color: black;
+}
+
+.modificar:hover{
+    background-color: #83a1bf;
+    color: black;
+}
+
+.agregarc2{
+    background-color: #96CFE2;
+    border: 0px;
+    border-radius: 5px;
+    padding: 7px;
+    color: black;
+}
+
+.agregarc2:hover{
+    background-color: #abd1f7;
+    color: black;
+}
+
+.eliminados{
+    background-color: #84a4b2;
+    border: 0px;
+    border-radius: 5px;
+    padding: 7px;
+    color: black;
+    margin-bottom: 20px;
+}
+
+.eliminados:hover{
+    background-color:#91b2c1;
+    color: black;
+}
+
+.cancelar{
+    margin-left: 5px;
+}

@@ -1,0 +1,52 @@
+.titulo {
+    text-align: center;
+}
+
+.shortcut-card {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    text-align: center;
+    padding: 5px; /* Reducir padding para acercar la imagen al borde */
+    transition: transform 0.2s;
+}
+
+.shortcut-card:hover {
+    transform: scale(1.05);
+}
+
+.shortcut-card img {
+    max-width: 80%; /* Incrementar el ancho de la imagen para acercarla a los bordes */
+    height: auto;
+    margin-bottom: 10px;
+    border-radius: 8px;
+}
+
+.agregarc {
+    border: 0px;
+    border-radius: 5px;
+    padding: 7px;
+    background-color: #6EB8D0;
+    color: black;
+}
+
+.agregarc:hover {
+    background-color: #8CBCEB;
+    color: black;
+}
+
+.modificar{
+    background-color: #7793af;
+    color: black;
+}
+
+.modificar:hover{
+    background-color: #83a1bf;
+    color: black;
+}
+
+.contenedor{
+    margin-bottom: 20px;
+}
+
+
