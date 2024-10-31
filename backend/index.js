@@ -11,7 +11,6 @@ app.use(cors({
   credentials: true // Permite el uso de credenciales (cookies, cabeceras de autenticación)
 }));
 
-
 // Middleware para parsear JSON y URL-encoded bodies
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
