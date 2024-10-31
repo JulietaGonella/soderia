@@ -1,0 +1,181 @@
+-- Crear la base de datos
+CREATE DATABASE BDsoderia;
+USE BDsoderia;
+
+-- Tabla de provincias
+CREATE TABLE provincias (
+    ID INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(255) NOT NULL
+);
+
+-- Tabla de localidades
+CREATE TABLE localidades (
+    ID INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(255) NOT NULL,
+    IDprovincia INT NOT NULL,
+    FOREIGN KEY (IDprovincia) REFERENCES provincias(ID)
+);
+
+-- Tabla de barrios
+CREATE TABLE barrios (
+    ID INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(255) NOT NULL,
+    IDlocalidad INT NOT NULL,
+    FOREIGN KEY (IDlocalidad) REFERENCES localidades(ID)
+);
+
+-- Tabla de clientes, ahora asociada con barrios
+CREATE TABLE cliente (
+    ID INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(255) NOT NULL,
+    telefono VARCHAR(20) NOT NULL,
+    IDbarrio INT NOT NULL,
+    direccion VARCHAR(255) NOT NULL,
+    FOREIGN KEY (IDbarrio) REFERENCES barrios(ID)
+);
+
+-- Tabla de categorías de productos
+CREATE TABLE categorias (
+    ID INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(255) NOT NULL
+);
+
+-- Tabla de productos
+CREATE TABLE productos (
+    ID INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(255) NOT NULL,
+    IDcategoria INT NOT NULL,
+    precio DECIMAL(10, 2) NOT NULL,
+    stock INT NOT NULL,
+    FOREIGN KEY (IDcategoria) REFERENCES categorias(ID)
+);
+
+-- Tabla de estados para pedidos (Ej: Pendiente, Completado)
+CREATE TABLE estados (
+    ID INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    descripcion VARCHAR(200) NOT NULL
+);
+
+-- Tabla de días de la semana
+CREATE TABLE dias (
+    ID INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(100) NOT NULL
+);
+
+-- Crear la tabla de tipos de pedido
+CREATE TABLE tipos_pedido (
+    ID INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    descripcion VARCHAR(100) NOT NULL
+);
+
+-- Tabla de pedidos, asociada con cliente y estado
+CREATE TABLE pedidos (
+    ID INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    IDcliente INT NOT NULL,
+    IDtipo_pedido INT NOT NULL,
+    IDestado INT NOT NULL,
+    IDrecorrido INT NOT NULL,
+    fecha_creacion DATE NOT NULL,
+    fecha_ultimo_envio DATE,
+    FOREIGN KEY (IDcliente) REFERENCES cliente(ID),
+    FOREIGN KEY (IDtipo_pedido) REFERENCES tipos_pedido(ID),
+    FOREIGN KEY (IDestado) REFERENCES estados(ID),
+    FOREIGN KEY (IDrecorrido) REFERENCES recorridos(ID)
+);
+
+-- Crear la tabla detallepedido con el nuevo orden de columnas
+CREATE TABLE detallepedido (
+    ID INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    IDpedido INT NOT NULL,             -- ID del pedido
+    IDdias INT,                        -- Usado para pedidos recurrentes
+    IDproducto INT NOT NULL,           -- ID del producto
+    cantidad INT NOT NULL,             -- Cantidad del producto
+    preciototal DECIMAL(13,3) NOT NULL,-- Precio total
+    IDestado INT NOT NULL,             -- Estado de la entrega individual
+    fecha_entrega DATE NOT NULL,       -- Fecha de entrega
+    completado BOOLEAN NOT NULL DEFAULT FALSE,
+    dardebaja boolean NOT NULL default false,-- Campo para controlar la entrega
+    cancelado boolean NOT NULL default false,
+    fechacancelado DATE,
+    FOREIGN KEY (IDpedido) REFERENCES pedidos(ID),
+    FOREIGN KEY (IDproducto) REFERENCES productos(ID),
+    FOREIGN KEY (IDdias) REFERENCES dias(ID),
+    FOREIGN KEY (IDestado) REFERENCES estados(ID)
+);
+
+-- Crear la tabla de roles
+CREATE TABLE roles (
+    ID INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(50) NOT NULL
+);
+
+-- Crear la tabla de usuarios
+CREATE TABLE usuarios (
+    ID INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    contraseña VARCHAR(255) NOT NULL,
+    IDrol INT NOT NULL,
+    FOREIGN KEY (IDrol) REFERENCES roles(ID)
+);
+
+-- Tabla de recorridos
+CREATE TABLE recorridos (
+    ID INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(255) NOT NULL,
+    descripcion TEXT,
+    fecha DATE NOT NULL
+);
+
+-- Crear la tabla de ubicaciones
+CREATE TABLE ubicaciones (
+    ID INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    IDrecorrido INT NOT NULL,
+    nombre VARCHAR(255),
+    latitud DECIMAL(9, 6) NOT NULL,
+    longitud DECIMAL(9, 6) NOT NULL,
+    FOREIGN KEY (IDrecorrido) REFERENCES recorridos(ID)
+);
+
+-- Crear la tabla de rutas
+CREATE TABLE rutas (
+    ID INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    IDrecorrido INT NOT NULL,
+    IDubicacion_inicio INT NOT NULL,
+    IDubicacion_fin INT NOT NULL,
+    orden INT NOT NULL, -- Para definir el orden de las rutas
+    FOREIGN KEY (IDrecorrido) REFERENCES recorridos(ID),
+    FOREIGN KEY (IDubicacion_inicio) REFERENCES ubicaciones(ID),
+    FOREIGN KEY (IDubicacion_fin) REFERENCES ubicaciones(ID)
+);
+
+-- Tabla para periodos de baja de pedidos
+CREATE TABLE periodos_baja (
+    ID INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    IDdetallepedido INT NOT NULL,
+    IDpedido INT NOT NULL,
+    IDdias INT NOT NULL,
+    fecha_inicio DATE,
+    fecha_fin DATE,
+    baja_indefinida BOOLEAN NOT NULL DEFAULT FALSE,
+    FOREIGN KEY (IDdetallepedido) REFERENCES detallepedido(ID),
+    FOREIGN KEY (IDpedido) REFERENCES pedidos(ID),
+    FOREIGN KEY (IDdias) REFERENCES dias(ID)
+);
+
+-- Tabla de estados de sesión
+CREATE TABLE estados_sesion (
+    ID INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    descripcion VARCHAR(100) NOT NULL
+);
+
+-- Tabla de sesiones
+CREATE TABLE sesiones (
+    ID INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    IDusuario INT NOT NULL,
+    fecha_hora_inicio DATETIME NOT NULL,
+    fecha_hora_fin DATETIME,
+    IDestado_sesion INT NOT NULL,
+    FOREIGN KEY (IDusuario) REFERENCES usuarios(ID),
+    FOREIGN KEY (IDestado_sesion) REFERENCES estados_sesion(ID)
+);
