@@ -19,28 +19,28 @@
         <form id="pedidoForm">
             <!-- Fecha de creación -->
             <div class="mb-3">
-                <label for="fechaCreacion" class="form-label">Fecha de Creación</label>
-                <input type="date" class="form-control" id="fechaCreacion">
+                <label for="fechaCreacion" class="form-label">Fecha de Creación *</label>
+                <input type="date" class="form-control" id="fechaCreacion" required>
             </div>
 
 
             <!-- Selección de cliente -->
             <div class="mb-3">
-                <label for="cliente" class="form-label">Cliente</label>
-                <select class="form-select" id="cliente">
+                <label for="cliente" class="form-label">Cliente *</label>
+                <select class="form-select" id="cliente" required>
                     
                 </select>
             </div>
 
             <div class="mb-3">
-                <label for="tipoPedido" class="form-label">Tipo de Pedido</label>
-                <select class="form-select" id="tipoPedido">
+                <label for="tipoPedido" class="form-label">Tipo de Pedido *</label>
+                <select class="form-select" id="tipoPedido" required>
                 </select>
             </div>
 
             <!-- Tabla para añadir productos -->
             <div class="mb-3">
-                <label class="form-label">Productos</label>
+                <label class="form-label">Productos *</label>
                 <table class="table table-bordered" id="productosTable">
                     <thead>
                         <tr>
@@ -53,17 +53,17 @@
                     <tbody id="productosBody">
                         <tr>
                             <td>
-                                <select class="diasEntrega form-control" id="selectdias">
+                                <select class="diasEntrega form-control" id="selectdias" required>
                                     
                                 </select>
                             </td>
                             <td>
-                                <select class="producto form-control" id="selectproductos">
+                                <select class="producto form-control" id="selectproductos" required>
                                     
                                 </select>
                             </td>
                             <td>
-                                <input type="number" class="form-control cantidadProducto" placeholder="Cantidad" id="cantidad">
+                                <input type="number" class="form-control cantidadProducto" placeholder="Cantidad" id="cantidad" required>
                             </td>
                             <td>
                                 <button type="button" class="btn btn modificar" id="agregarproducto">Agregar</button>
