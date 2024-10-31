@@ -1,4 +1,4 @@
-$(document).ready(function () {  
+$(document).ready(function () {
     // Cargar todos los pedidos (regulares y únicos)
     $.get('http://localhost:3000/pedidos?completado=true', function (data) {
         let tableBody = $('#tablepedidosbody');
@@ -8,11 +8,10 @@ $(document).ready(function () {
             data.forEach(function (pedido) {
                 let fechaCreacion = new Date(pedido.FechaCreacion);
                 let fechaEntrega = new Date(pedido.FechaEntrega);
-                
+
                 let fechaFormateadaCreacion = `${fechaCreacion.getDate().toString().padStart(2, '0')}/${(fechaCreacion.getMonth() + 1).toString().padStart(2, '0')}/${fechaCreacion.getFullYear()}`;
                 let fechaFormateadaEntrega = `${fechaEntrega.getDate().toString().padStart(2, '0')}/${(fechaEntrega.getMonth() + 1).toString().padStart(2, '0')}/${fechaEntrega.getFullYear()}`;
 
-                // Mostrar todos los pedidos, tanto regulares como únicos
                 tableBody.append(
                     `<tr>
                         <th scope="row" class="text-center">${pedido.IDPedido}</th>
@@ -27,50 +26,49 @@ $(document).ready(function () {
             });
         }
 
-        // Inicializa DataTables después de llenar la tabla
         $('#table_id').DataTable({
             "pageLength": 5,
-            lengthMenu: [
-                [5, 10, 25, 50],
-                [5, 10, 25, 50]
-            ],
-            "language": {
-                "url": "https://cdn.datatables.net/plug-ins/1.13.1/i18n/es-ES.json"
-            }
+            lengthMenu: [[5, 10, 25, 50], [5, 10, 25, 50]],
+            "language": { "url": "https://cdn.datatables.net/plug-ins/1.13.1/i18n/es-ES.json" }
         });
     }).fail(function () {
         console.error('Error al cargar los datos de los pedidos completados');
     });
 
-    // Automatizar la restauración de pedidos regulares al día siguiente de la fecha de entrega
-    setInterval(function () {
-        $.get('http://localhost:3000/pedidos?completado=true', function (data) {
-            data.forEach(function (pedido) {
-                let fechaEntrega = new Date(pedido.FechaEntrega);
-                let hoy = new Date();
-
-                // Verificar si el pedido es regular y si ha pasado un día desde la entrega
-                if (pedido.TipoPedido === 'Regular' && hoy > fechaEntrega) {
-                    let diferencia = Math.floor((hoy - fechaEntrega) / (1000 * 60 * 60 * 24));
-
-                    if (diferencia >= 1) {
-                        restaurarPedido(pedido.IDPedido, pedido.IDdias);
-                    }
-                }
-            });
-        });
-    }, 24 * 60 * 60 * 1000); // Revisa una vez al día
+    // Llamar a la función de restauración automática de pedidos regulares al día siguiente
+    restaurarPedidosRegulares();
 });
 
+// Automatización para restaurar pedidos regulares
+function restaurarPedidosRegulares() {
+    const hoy = new Date();
+    const fechaHoy = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`; // Formato YYYY-MM-DD
+
+    // Revisión diaria para restaurar pedidos regulares al día siguiente de su entrega
+    $.get('http://localhost:3000/pedidos?completado=true', function (data) {
+        data.forEach(function (pedido) {
+            if (pedido.TipoPedido === 'Regular') {
+                let fechaEntrega = new Date(pedido.FechaEntrega);
+                let diferencia = Math.floor((hoy - fechaEntrega) / (1000 * 60 * 60 * 24));
+
+                // Restaurar automáticamente si ha pasado un día desde la fecha de entrega
+                if (diferencia >= 1) {
+                    restaurarPedido(pedido.IDPedido, pedido.IDdias);
+                }
+            }
+        });
+    }).fail(function () {
+        console.error('Error al cargar los datos de los pedidos regulares');
+    });
+}
+
+// Función de restauración de pedidos
 function restaurarPedido(pedidoID, diaId) {
     $.ajax({
         url: `http://localhost:3000/restaurarpedido`,
         type: 'POST',
         contentType: 'application/json',
-        data: JSON.stringify({
-            pedidoID: pedidoID,
-            diaId: diaId
-        }),
+        data: JSON.stringify({ pedidoID: pedidoID, diaId: diaId }),
         success: function(response) {
             console.log(`Pedido ${pedidoID} restaurado correctamente`);
         },
