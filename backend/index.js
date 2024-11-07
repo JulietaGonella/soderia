@@ -1198,6 +1198,7 @@ app.get('/pedidos/:id/:diaId', async (req, res) => {
     res.status(500).send('Error en el servidor');
   }
 });
+
 app.put('/pedidos/:id', async (req, res) => {
   const idPedido = req.params.id; // ID del pedido a actualizar
   const { tipoPedido, productos } = req.body; // Obtenemos el tipo de pedido y los productos
@@ -1272,7 +1273,6 @@ app.put('/pedidos/:id', async (req, res) => {
       res.status(500).json({ error: 'Error en la actualización del pedido.' });
   }
 });
-
 
 app.get('/periodos_baja/:id', async (req, res) => {
   const { id } = req.params; // Desestructurando el id desde params
