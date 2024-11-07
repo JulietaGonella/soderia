@@ -1,4 +1,7 @@
 $(document).ready(function () {
+    // Recargar la página para realizar la acción una vez
+    location.reload();
+    
     // Cargar todos los pedidos (regulares y únicos)
     $.get('http://localhost:3000/pedidos?completado=true', function (data) {
         let tableBody = $('#tablepedidosbody');
@@ -17,8 +20,8 @@ $(document).ready(function () {
                         <th scope="row" class="text-center">${pedido.IDPedido}</th>
                         <td class="text-center">${pedido.Cliente}</td>
                         <td class="text-center">${pedido.Direccion}</td>
-                        <td class="text-center">${pedido.Barrio}</td>
-                        <td class="text-center">${pedido.Localidad}</td>
+                        <td class="text-center">${pedido.Barrio}</td> <!-- Barrio -->
+                        <td class="text-center">${pedido.Localidad}</td> <!-- Localidad -->
                         <td class="text-center">${pedido.TipoPedido}</td>
                         <td class="text-center">${fechaFormateadaCreacion}</td>
                         <td class="text-center">${fechaFormateadaEntrega}</td>
@@ -32,23 +35,18 @@ $(document).ready(function () {
             "pageLength": 5,
             lengthMenu: [[5, 10, 25, 50], [5, 10, 25, 50]],
             "language": { "url": "https://cdn.datatables.net/plug-ins/1.13.1/i18n/es-ES.json" },
+            // Configuración para hacer que el buscador solo busque en la columna del nombre del cliente
             "columnDefs": [
                 {
-                    "targets": 1,
-                    "searchable": true
+                    "targets": 1, // El índice de la columna de "Cliente" (asumiendo que es la segunda columna)
+                    "searchable": true // Habilita la búsqueda solo en esta columna
                 },
                 {
-                    "targets": "_all",
+                    "targets": "_all", // Deshabilita la búsqueda en todas las demás columnas
                     "searchable": false
                 }
             ]
         });
-
-        // Recargar la página automáticamente después de 5 segundos (5000 ms)
-        setTimeout(function() {
-            location.reload();
-        }, 5000); // Recarga en 5 segundos
-
     }).fail(function () {
         console.error('Error al cargar los datos de los pedidos completados');
     });
@@ -57,16 +55,19 @@ $(document).ready(function () {
     restaurarPedidosRegulares();
 });
 
+// Automatización para restaurar pedidos regulares
 function restaurarPedidosRegulares() {
     const hoy = new Date();
     const fechaHoy = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`; // Formato YYYY-MM-DD
 
+    // Revisión diaria para restaurar pedidos regulares al día siguiente de su entrega
     $.get('http://localhost:3000/pedidos?completado=true', function (data) {
         data.forEach(function (pedido) {
             if (pedido.TipoPedido === 'Regular') {
                 let fechaEntrega = new Date(pedido.FechaEntrega);
                 let diferencia = Math.floor((hoy - fechaEntrega) / (1000 * 60 * 60 * 24));
 
+                // Restaurar automáticamente si ha pasado un día desde la fecha de entrega
                 if (diferencia >= 1) {
                     restaurarPedido(pedido.IDPedido, pedido.IDdias);
                 }
@@ -77,6 +78,7 @@ function restaurarPedidosRegulares() {
     });
 }
 
+// Función de restauración de pedidos
 function restaurarPedido(pedidoID, diaId) {
     $.ajax({
         url: `http://localhost:3000/restaurarpedido`,
