@@ -26,7 +26,59 @@ $(document).ready(function () {
 
     cargarPedidos(); // Cargar los pedidos inicialmente
 
-    // Filtrar pedidos cuando se seleccione un día
+    $('#fecha-inicio, #fecha-fin').on('change', function () {
+        let fechaInicio = $('#fecha-inicio').val() ? new Date($('#fecha-inicio').val()) : null;
+        let fechaFin = $('#fecha-fin').val() ? new Date($('#fecha-fin').val()) : null;
+
+        // Validar fechas
+        if (fechaInicio && isNaN(fechaInicio.getTime())) {
+            alert("La fecha de inicio no es válida");
+            return;
+        }
+        if (fechaFin && isNaN(fechaFin.getTime())) {
+            alert("La fecha de fin no es válida");
+            return;
+        }
+
+        // Ajustar la fechaFin para incluir hasta el último milisegundo del día
+        if (fechaFin) {
+            fechaFin.setHours(23, 59, 59, 999); // Establecer la fecha de fin al final del día
+        }
+
+        // Filtrar los pedidos
+        let pedidosFiltrados = allPedidosData.filter(function (pedido) {
+            let fechaCreacion = new Date(pedido.FechaCreacion);
+
+            // Eliminar la hora de la fecha de creación (ponerlo a medianoche)
+            fechaCreacion.setHours(0, 0, 0, 0);
+
+            let enRango = true;
+
+            // Comprobar la fecha de inicio (incluirla en el rango)
+            if (fechaInicio) {
+                enRango = enRango && (fechaCreacion >= fechaInicio);
+            }
+
+            // Comprobar la fecha de fin (incluirla en el rango, también puede ser el mismo día)
+            if (fechaFin) {
+                // Ajustar la fecha de fin a las 23:59:59.999 para incluir hasta el último milisegundo del día
+                let fechaFinAjustada = new Date(fechaFin);
+                fechaFinAjustada.setHours(23, 59, 59, 999);
+                enRango = enRango && (fechaCreacion <= fechaFinAjustada);
+            }
+
+            return enRango;
+        });
+
+        // Limpiar los filtros de día y cliente y cargar todos los clientes de nuevo
+        $('#filtro-dia').val('');
+        $('#filtro-cliente').val(''); // Limpiar el cliente también
+        cargarClientes(); // Cargar todos los clientes
+
+        cargarTabla(pedidosFiltrados);
+    });
+
+
     $('#filtro-dia').on('change', function () {
         let diaSeleccionado = $(this).val();
         console.log(diaSeleccionado); // Verificar el valor seleccionado
@@ -37,6 +89,9 @@ $(document).ready(function () {
             pedidosFiltrados = allPedidosData.filter(function (pedido) {
                 return pedido.IDdias == Number(diaSeleccionado); // Filtrar por IDdias
             });
+            // Limpiar los valores de las fechas cuando se seleccione un día
+            $('#fecha-inicio').val('');
+            $('#fecha-fin').val('');
             // Actualizar el select de clientes basado en los pedidos filtrados
             actualizarFiltroClientes(pedidosFiltrados);
         }
@@ -58,6 +113,8 @@ $(document).ready(function () {
             pedidosFiltrados = pedidosFiltrados.filter(function (pedido) {
                 return pedido.IDcliente == Number(clienteSeleccionado); // Filtrar por IDCliente
             });
+            $('#fecha-inicio').val('');
+            $('#fecha-fin').val('');
         }
 
         // Si hay un día seleccionado, filtrar también por día
@@ -65,6 +122,9 @@ $(document).ready(function () {
             pedidosFiltrados = pedidosFiltrados.filter(function (pedido) {
                 return pedido.IDdias == Number(diaSeleccionado); // Filtrar por IDdias
             });
+            // Limpiar los valores de las fechas cuando se seleccione un cliente
+            $('#fecha-inicio').val('');
+            $('#fecha-fin').val('');
         }
 
         console.log(pedidosFiltrados); // Verificar los pedidos filtrados
@@ -76,6 +136,7 @@ $(document).ready(function () {
     // Recargar todos los pedidos al hacer clic en el botón
     $('#reload-pedidos').on('click', function () {
         cargarTabla(allPedidosData); // Cargar todos los pedidos de nuevo
+        $('#fecha-inicio, #fecha-fin').val('');
         $('#filtro-dia').val(''); // Reiniciar el filtro de día
         $('#filtro-cliente').val(''); // Reiniciar el filtro de cliente
         cargarClientes(); // Recargar todos los clientes
@@ -130,6 +191,33 @@ function cargarTabla(data) {
     let tbody = $('#tablepedidosbody');
     tbody.empty(); // Limpia el contenido de la tabla
 
+    // Inicializa el DataTable si no está inicializado
+    if (!$.fn.DataTable.isDataTable('#table_id')) {
+        $("#table_id").DataTable({
+            "pageLength": 5,
+            lengthMenu: [
+                [5, 10, 25, 50],
+                [5, 10, 25, 50]
+            ],
+            "language": {
+                "url": "https://cdn.datatables.net/plug-ins/1.13.1/i18n/es-ES.json"
+            },
+            // Configuración para hacer que el buscador solo busque en la columna del nombre del cliente
+            "columnDefs": [
+                {
+                    "targets": 1, // El índice de la columna de "Cliente" (asumiendo que es la segunda columna)
+                    "searchable": true // Habilita la búsqueda solo en esta columna
+                },
+                {
+                    "targets": "_all", // Deshabilita la búsqueda en todas las demás columnas
+                    "searchable": false
+                }
+            ]
+        });
+    }
+
+    // Limpiar cualquier fila existente en la tabla
+    $("#table_id").DataTable().clear();
 
     // Si hay datos, cargarlos en el DataTable
     if (data.length > 0) {
@@ -173,30 +261,8 @@ function cargarTabla(data) {
             `);
         });
 
-        // Inicializa el DataTable si no está inicializado
-        if (!$.fn.DataTable.isDataTable('#table_id')) {
-            $("#table_id").DataTable({
-                "pageLength": 5,
-                lengthMenu: [
-                    [5, 10, 25, 50],
-                    [5, 10, 25, 50]
-                ],
-                "language": {
-                    "url": "https://cdn.datatables.net/plug-ins/1.13.1/i18n/es-ES.json"
-                },
-                // Configuración para hacer que el buscador solo busque en la columna del nombre del cliente
-                "columnDefs": [
-                    {
-                        "targets": 1, // El índice de la columna de "Cliente" (asumiendo que es la segunda columna)
-                        "searchable": true // Habilita la búsqueda solo en esta columna
-                    },
-                    {
-                        "targets": "_all", // Deshabilita la búsqueda en todas las demás columnas
-                        "searchable": false
-                    }
-                ]
-            });
-        }
+        // Actualiza el DataTable con los nuevos datos
+        $("#table_id").DataTable().rows.add(tbody.find('tr')).draw();
     } else {
         tbody.append('<tr><td colspan="7" class="text-center">No hay pedidos disponibles.</td></tr>');
     }
