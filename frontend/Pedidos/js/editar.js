@@ -1,50 +1,4 @@
-// Cargar días   
-async function cargarDiasSelect(selector, selectedId = null) {
-    const response = await fetch('http://localhost:3000/dias');
-    const dias = await response.json();
-    const diaSelect = crearSelect(selector); // Crea el select
-
-    // Limpiar opciones previas
-    diaSelect.innerHTML = '';
-    diaSelect.appendChild(new Option('Selecciona un día', '', true, true));
-
-    dias.forEach(dia => {
-        const option = new Option(dia.nombre, dia.ID, false, dia.ID === selectedId);
-        diaSelect.appendChild(option);
-    });
-
-    // Deshabilitar el select
-    diaSelect.disabled = true; // Deshabilitar el select al cargar
-}
-
-// Cargar productos
-async function cargarProductosSelect(selector, selectedId = null) {
-    const response = await fetch('http://localhost:3000/productos');
-    const productos = await response.json();
-    const productoSelect = crearSelect(selector); // Crea el select
-
-    // Limpiar opciones previas
-    productoSelect.innerHTML = '';
-    productoSelect.appendChild(new Option('Selecciona un producto', '', true, true));
-
-    productos.forEach(producto => {
-        const option = new Option(producto.producto, producto.ID, false, producto.ID === selectedId);
-        productoSelect.appendChild(option);
-    });
-
-    // Deshabilitar el select
-    productoSelect.disabled = true; // Deshabilitar el select al cargar
-}
-
-function crearSelect(selector) {
-    const select = document.createElement('select');
-    select.setAttribute('id', selector.replace('#', '')); // Asigna un id al select
-    select.classList.add('form-control'); // Añadir clase para estilos
-    const container = document.querySelector(selector).parentNode; // Asumiendo que deseas añadirlo al mismo contenedor
-    container.appendChild(select);
-    return select;
-}
-document.addEventListener('DOMContentLoaded', async function () { 
+document.addEventListener('DOMContentLoaded', async function () {
     const urlParams = new URLSearchParams(window.location.search);
     const idPedido = urlParams.get('id');
     const diaId = urlParams.get('diaId');
@@ -70,6 +24,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 $('#iddetallepedido').val(detallesIds.join(','));
                 cargarClientes(firstRow.IDCliente);
                 cargarTiposPedido(firstRow.TipoPedidoID);
+                cargarDiasSelect(firstRow.IDDias);
                 cargarProductosExistentes(pedido);
             } else {
                 console.log("No se encontraron productos en el pedido.");
@@ -83,34 +38,56 @@ document.addEventListener('DOMContentLoaded', async function () {
         console.log("No se proporcionó un ID de pedido en la URL.");
     }
 
+    let filaId = 0; // Contador para generar ids únicos
+
     // Función para cargar productos existentes en la tabla 
     function cargarProductosExistentes(pedido) {
         pedido.forEach(producto => {
             const row = `
-            <tr>
-                <td>
-                    <div id="diasEntregaContainer-${producto.IDDetalle}"></div>
-                </td>
-                <td>
-                    <div id="productoContainer-${producto.IDDetalle}"></div>
-                </td>
-                <td>
-                    <input type="number" class="form-control cantidadProducto" value="${producto.cantidad}" placeholder="Cantidad" disabled>
-                </td>
-                <td>
-                    <input type="hidden" class="idDetalle" value="${producto.IDDetalle}"> <!-- Campo oculto para el ID -->
-                    <button type="button" class="btn btn modificar btn-sm">Editar</button>
-                    <button type="button" class="btn btn-danger eliminar btn-sm">Eliminar</button>
-                </td>
-            </tr>
-            `;
+        <tr>
+            <td>
+                <div id="productoContainer-${producto.IDDetalle}"></div>
+            </td>
+            <td>
+                <input type="number" class="form-control cantidadProducto" value="${producto.cantidad}" placeholder="Cantidad" disabled>
+            </td>
+            <td>
+                <input type="hidden" class="idDetalle" value="${producto.IDDetalle}">
+                <button type="button" class="btn btn modificar btn-sm">Editar</button>
+            </td>
+        </tr>
+        `;
             $('#productosBody').append(row);
-            cargarDiasSelect(`#diasEntregaContainer-${producto.IDDetalle}`, producto.IDDias);
             cargarProductosSelect(`#productoContainer-${producto.IDDetalle}`, producto.IDProducto);
         });
+
+        // Añadir una fila vacía para agregar más productos
+        agregarFilaVacia();
     }
 
-    // Usar delegación de eventos para el botón "Modificar"
+    // Función para agregar una fila vacía al final de la tabla 
+    function agregarFilaVacia() {
+        filaId++; // Incrementar el id para cada nueva fila
+        const emptyRow = `
+    <tr>
+        <td>
+            <div id="productoContainer-${filaId}"></div>
+        </td>
+        <td>
+            <input type="number" class="form-control cantidadProducto" placeholder="Cantidad">
+        </td>
+        <td>
+            <button type="button" class="btn btn modificar btn-sm">Agregar</button>
+        </td>
+    </tr>
+    `;
+        $('#productosBody').append(emptyRow);
+
+        // Cargar el select para la nueva fila vacía (si es necesario)
+        cargarProductosSelect(`#productoContainer-${filaId}`);
+    }
+
+    // Usar delegación de eventos para el botón "Modificar" y "Agregar"
     $('#productosBody').on('click', '.modificar', function () {
         const $fila = $(this).closest('tr');
         const productoSelect = $fila.find('select[id^="productoContainer"]');
@@ -124,7 +101,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             productoSelect.prop('disabled', false);
             cantidadInput.prop('disabled', false);
             $(this).text("Guardar");
-        } else {
+        } else if ($(this).text() === "Guardar") {
             const productoSeleccionado = productoSelect.val();
             const cantidad = cantidadInput.val();
 
@@ -142,8 +119,15 @@ document.addEventListener('DOMContentLoaded', async function () {
             productoSelect.prop('disabled', true);
             cantidadInput.prop('disabled', true);
             $(this).text("Editar");
+        } else if ($(this).text() === "Agregar") {
+            // Agregar una nueva fila vacía
+            agregarFilaVacia();
+            $(this).text("Editar");
+            productoSelect.prop('disabled', true);
+            cantidadInput.prop('disabled', true);
         }
     });
+
 
     // Enviar los cambios al servidor
     $('#pedidoFormeditar').on('submit', function (event) {
@@ -151,7 +135,6 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         const productosModificados = [];
         $('#productosBody tr').each(function () {
-            const diaEntrega = $(this).find('select[id^="diasEntregaContainer"]').val();
             const idProducto = $(this).find('select[id^="productoContainer"]').val();
             const cantidad = $(this).find('.cantidadProducto').val();
             const idDetalle = $(this).find('.idDetalle').val(); // Captura el ID desde el campo oculto
@@ -159,13 +142,13 @@ document.addEventListener('DOMContentLoaded', async function () {
             // Verifica que el ID no sea undefined
             console.log("ID Detalle en envío:", idDetalle);
 
-            if (diaEntrega && idProducto && cantidad) {
+            if (idProducto && cantidad) {
                 productosModificados.push({
                     idDetalle: idDetalle,
-                    diaEntrega: diaEntrega,
                     idProducto: idProducto,
-                    cantidad: cantidad
-                });
+                    cantidad: cantidad,
+                    idDia: diaId // Mantener el idDia que se obtiene de la URL
+                }); 
             }
         });
 
@@ -197,7 +180,41 @@ document.addEventListener('DOMContentLoaded', async function () {
     });
 });
 
+// Cargar productos en el select
+async function cargarProductosSelect(selector, selectedId = null) {
+    const response = await fetch('http://localhost:3000/productos');
+    const productos = await response.json();
+    const productoSelect = crearSelect(selector); // Crea el select
 
+    // Limpiar opciones previas
+    productoSelect.innerHTML = '';
+    productoSelect.appendChild(new Option('Selecciona un producto', '', true, true));
+
+    productos.forEach(producto => {
+        const option = new Option(producto.producto, producto.ID, false, producto.ID === selectedId);
+        productoSelect.appendChild(option);
+    });
+
+    // Habilitar solo el select de la fila recién agregada
+    productoSelect.disabled = false;
+
+    // Deshabilitar todos los demás selects en filas anteriores
+    $('#productosBody tr').each(function () {
+        // Deshabilitar selects en filas que no son la última
+        if (!$(this).is(':last-child')) {
+            $(this).find('select').prop('disabled', true);
+        }
+    });
+}
+
+function crearSelect(selector) {
+    const select = document.createElement('select');
+    select.setAttribute('id', selector.replace('#', '')); // Asigna un id al select
+    select.classList.add('form-control'); // Añadir clase para estilos
+    const container = document.querySelector(selector); // Asumiendo que deseas añadirlo al mismo contenedor
+    container.appendChild(select);
+    return select;
+}
 
 // Cargar clientes
 async function cargarClientes(selectedId = null) {
@@ -228,5 +245,19 @@ async function cargarTiposPedido(selectedId = null) {
     tiposPedido.forEach(tipo => {
         const option = new Option(tipo.descripcion, tipo.ID, false, tipo.ID === selectedId);
         tipoPedidoSelect.appendChild(option);
+    });
+}
+
+async function cargarDiasSelect(selectedId = null) {
+    const response = await fetch('http://localhost:3000/dias');
+    const dias = await response.json();
+    const diaSelect = document.getElementById('diasEntregaContainer');
+
+    diaSelect.innerHTML = ''; // Limpiar opciones previas
+    diaSelect.appendChild(new Option('Selecciona un día', '', true, true));
+
+    dias.forEach(dia => {
+        const option = new Option(dia.nombre, dia.ID, false, dia.ID === selectedId);
+        diaSelect.appendChild(option);
     });
 }

@@ -38,7 +38,7 @@
             <div class="mb-3">
                 <label for="cliente" class="form-label">Cliente</label>
                 <select class="form-select" id="cliente" disabled>
-                    
+
                 </select>
             </div>
 
@@ -48,13 +48,18 @@
                 </select>
             </div>
 
-            <!-- Tabla para añadir productos -->
+            <!-- Selector de Días de Entrega -->
+            <div class="mb-3">
+                <label for="diasEntrega" class="form-label">Días de Entrega</label>
+                <select class="form-select" id="diasEntregaContainer" disabled></select>
+            </div>
+
+            <!-- Tabla de Productos -->
             <div class="mb-3">
                 <label class="form-label">Productos</label>
                 <table class="table table-bordered" id="productosTable">
                     <thead>
                         <tr>
-                            <th>Días de Entrega</th>
                             <th>Producto</th>
                             <th>Cantidad</th>
                             <th>Acciones</th>
@@ -64,6 +69,7 @@
                     </tbody>
                 </table>
             </div>
+
 
             <!-- Botón de agregar pedido -->
             <div class="d-flex justify-content-end me-4 mb-4">

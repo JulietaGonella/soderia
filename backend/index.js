@@ -1198,72 +1198,81 @@ app.get('/pedidos/:id/:diaId', async (req, res) => {
     res.status(500).send('Error en el servidor');
   }
 });
-
 app.put('/pedidos/:id', async (req, res) => {
   const idPedido = req.params.id; // ID del pedido a actualizar
   const { tipoPedido, productos } = req.body; // Obtenemos el tipo de pedido y los productos
+  const estadoID = 1;  // Estado fijo para el nuevo pedido
 
   if (!productos || productos.length === 0) {
-    return res.status(400).json({ error: 'No se proporcionaron productos a actualizar.' });
+      return res.status(400).json({ error: 'No se proporcionaron productos a actualizar.' });
   }
 
   try {
-    // Actualiza el tipo de pedido
-    if (tipoPedido !== undefined) {
-      const sqlTipo = 'UPDATE pedidos SET IDtipo_pedido = ? WHERE ID = ?';
-      await db.query(sqlTipo, [tipoPedido, idPedido]);
-    }
-
-    for (const producto of productos) {
-      const { idDetalle, idProducto, cantidad } = producto;
-
-      if (!idDetalle) {
-        return res.status(400).json({ error: 'ID del detalle del producto es requerido.' });
+      // Actualiza el tipo de pedido
+      if (tipoPedido !== undefined) {
+          const sqlTipo = 'UPDATE pedidos SET IDtipo_pedido = ? WHERE ID = ?';
+          await db.query(sqlTipo, [tipoPedido, idPedido]);
       }
 
-      const sqlCheck = 'SELECT * FROM detallepedido WHERE ID = ? AND IDpedido = ?';
-      const [detalle] = await db.query(sqlCheck, [idDetalle, idPedido]); // Asegúrate de incluir diaEntrega
+      // Iterar sobre los productos
+      for (const producto of productos) {
+          const { idDetalle, idProducto, cantidad, idDia } = producto;
 
+          if (!idProducto || !cantidad || !idDia) {
+              return res.status(400).json({ error: 'ID de producto, cantidad y día son requeridos.' });
+          }
 
-      if (detalle.length === 0) {
-        return res.status(400).json({ error: 'El detalle del producto no pertenece al pedido especificado.' });
+          if (idDetalle) {
+              // Actualizar detalle existente
+              const sqlCheck = 'SELECT * FROM detallepedido WHERE ID = ? AND IDpedido = ?';
+              const [detalle] = await db.query(sqlCheck, [idDetalle, idPedido]);
+
+              if (detalle.length === 0) {
+                  return res.status(400).json({ error: 'El detalle del producto no pertenece al pedido especificado.' });
+              }
+
+              // Obtener el precio del producto
+              const [productoDb] = await db.query('SELECT precio FROM productos WHERE ID = ?', [idProducto]);
+
+              if (productoDb.length === 0) {
+                  return res.status(400).json({ error: 'Producto no encontrado.' });
+              }
+
+              const preciototal = productoDb[0].precio * cantidad; // Calcular el precio total
+
+              // Actualizar producto y mantener el idDia sin modificar
+              const sqlUpdateDetalle = `
+                  UPDATE detallepedido 
+                  SET IDproducto = ?, cantidad = ?, preciototal = ?, IDdias = ? 
+                  WHERE ID = ? AND IDpedido = ?
+              `;
+              await db.query(sqlUpdateDetalle, [idProducto, cantidad, preciototal, idDia, idDetalle, idPedido]);
+
+          } else {
+              // Insertar nuevo producto en detallepedido
+              const [productoDb] = await db.query('SELECT precio FROM productos WHERE ID = ?', [idProducto]);
+
+              if (productoDb.length === 0) {
+                  return res.status(400).json({ error: 'Producto no encontrado.' });
+              }
+
+              const preciototal = productoDb[0].precio * cantidad; // Calcular el precio total
+
+              const sqlInsert = `
+                  INSERT INTO detallepedido (IDpedido, IDdias,  IDproducto, cantidad, preciototal, IDestado)
+                  VALUES (?, ?, ?, ?, ?, ?)
+              `;
+              await db.query(sqlInsert, [idPedido, idDia, idProducto, cantidad, preciototal, estadoID]);
+          }
       }
 
-      // Crear un array para los valores que se actualizarán y una lista de asignaciones
-      const updates = [];
-      const values = [];
-
-      if (idProducto !== undefined) {
-        updates.push('IDproducto = ?');
-        values.push(idProducto);
-      }
-      if (cantidad !== undefined) {
-        updates.push('cantidad = ?');
-        values.push(cantidad);
-      }
-
-      if (updates.length === 0) {
-        return res.status(400).json({ error: 'No se proporcionaron campos válidos para actualizar.' });
-      }
-
-      // Agregar el ID del detalle a los valores
-      values.push(idDetalle);
-
-      // Construir la consulta SQL
-      const sql = `
-              UPDATE detallepedido 
-              SET ${updates.join(', ')} 
-              WHERE ID = ?
-          `;
-      await db.query(sql, values);
-    }
-
-    res.status(200).json({ message: 'Pedido actualizado correctamente.' });
+      res.status(200).json({ success: true, message: 'Pedido actualizado correctamente.' });
   } catch (error) {
-    console.error('Error al actualizar el pedido:', error);
-    res.status(500).json({ error: 'Error al actualizar el pedido: ' + error.message });
+      console.error("Error al actualizar el pedido:", error);
+      res.status(500).json({ error: 'Error en la actualización del pedido.' });
   }
 });
+
 
 app.get('/periodos_baja/:id', async (req, res) => {
   const { id } = req.params; // Desestructurando el id desde params
