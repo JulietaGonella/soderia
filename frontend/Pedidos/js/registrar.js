@@ -40,8 +40,9 @@ async function cargarTiposPedido() {
     });
 }
 
-// Cargar días
-async function cargarDiasSelect(select) {
+// Cargar días en el selector de día de entrega fuera de la tabla de productos
+async function cargarDiasSelect() {
+    const select = document.getElementById('diaEntrega');
     try {
         const response = await fetch('http://localhost:3000/dias');
         const dias = await response.json();
@@ -85,8 +86,8 @@ async function cargarProductosSelect(select) {
 }
 
 // Validar si la fila tiene datos completos
-function validarFila(selectDia, selectProducto, inputCantidad) {
-    if (selectDia.value === '' || selectProducto.value === '' || inputCantidad.value === '') {
+function validarFila(selectProducto, inputCantidad) {
+    if (selectProducto.value === '' || inputCantidad.value === '') {
         return false;
     }
     return true;
@@ -94,12 +95,9 @@ function validarFila(selectDia, selectProducto, inputCantidad) {
 
 // Editar fila: Habilitar campos nuevamente y cambiar el botón a "Guardar"
 function editarFila(fila) {
-    const selectDia = fila.querySelector('.diasEntrega');
     const selectProducto = fila.querySelector('.producto');
     const inputCantidad = fila.querySelector('.cantidadProducto');
 
-    // Habilitar los elementos
-    selectDia.disabled = false;
     selectProducto.disabled = false;
     inputCantidad.disabled = false;
 
@@ -118,8 +116,6 @@ function guardarFila(fila) {
     const selectProducto = fila.querySelector('.producto');
     const inputCantidad = fila.querySelector('.cantidadProducto');
 
-    // Deshabilitar los elementos
-    selectDia.disabled = true;
     selectProducto.disabled = true;
     inputCantidad.disabled = true;
 
@@ -134,12 +130,9 @@ function guardarFila(fila) {
 
 // Deshabilitar fila y cambiar botones de "Agregar" a "Editar" y "Eliminar"
 function deshabilitarFila(ultimaFila) {
-    const selectDia = ultimaFila.querySelector('.diasEntrega');
     const selectProducto = ultimaFila.querySelector('.producto');
     const inputCantidad = ultimaFila.querySelector('.cantidadProducto');
 
-    // Deshabilitar los elementos
-    selectDia.disabled = true;
     selectProducto.disabled = true;
     inputCantidad.disabled = true;
 
@@ -175,11 +168,10 @@ function eliminarFila(fila) {
 // Agregar nueva fila en la tabla de productos solo si los datos están completos
 function agregarFilaProducto() {
     const ultimaFila = document.querySelector('#productosBody tr:last-child');
-    const selectDia = ultimaFila.querySelector('.diasEntrega');
     const selectProducto = ultimaFila.querySelector('.producto');
     const inputCantidad = ultimaFila.querySelector('.cantidadProducto');
 
-    if (!validarFila(selectDia, selectProducto, inputCantidad)) {
+    if (!validarFila(selectProducto, inputCantidad)) {
         Swal.fire({
             icon: 'warning',
             title: 'Datos incompletos',
@@ -195,13 +187,6 @@ function agregarFilaProducto() {
     // Crear nueva fila
     const tableBody = document.getElementById('productosBody');
     const row = document.createElement('tr');
-
-    // Crear select de días
-    const tdDia = document.createElement('td');
-    const selectDiaNuevo = document.createElement('select');
-    selectDiaNuevo.classList.add('diasEntrega', 'form-control');
-    cargarDiasSelect(selectDiaNuevo);
-    tdDia.appendChild(selectDiaNuevo);
 
     // Crear select de productos
     const tdProducto = document.createElement('td');
@@ -227,8 +212,6 @@ function agregarFilaProducto() {
     buttonAgregar.addEventListener('click', agregarFilaProducto);
     tdAccion.appendChild(buttonAgregar);
 
-    // Agregar las celdas a la fila
-    row.appendChild(tdDia);
     row.appendChild(tdProducto);
     row.appendChild(tdCantidad);
     row.appendChild(tdAccion);
@@ -240,11 +223,9 @@ function agregarFilaProducto() {
 document.addEventListener('DOMContentLoaded', function() {
     cargarClientes();
     cargarTiposPedido();
+    cargarDiasSelect();
 
-    // Cargar productos y días para la primera fila ya en el HTML
-    const selectDias = document.getElementById('selectdias');
     const selectProductos = document.getElementById('selectproductos');
-    cargarDiasSelect(selectDias);
     cargarProductosSelect(selectProductos);
 
     // Event listener para agregar nuevas filas
@@ -264,17 +245,18 @@ document.getElementById('pedidoForm').addEventListener('submit', async (e) => {
     const clienteID = document.getElementById('cliente').value;
     const tipoPedidoID = document.getElementById('tipoPedido').value;
     const fechaCreacion = document.getElementById('fechaCreacion').value;
-    const detalles = [];
+    const diaEntrega = document.getElementById('diaEntrega').value; // Selección fuera de la tabla
 
+    const detalles = [];
     const filas = document.querySelectorAll('#productosBody tr');
+    
     filas.forEach(fila => {
-        const selectDia = fila.querySelector('.diasEntrega');
         const selectProducto = fila.querySelector('.producto');
         const inputCantidad = fila.querySelector('.cantidadProducto');
 
-        if (validarFila(selectDia, selectProducto, inputCantidad)) {
+        if (validarFila(diaEntrega, selectProducto, inputCantidad)) {
             detalles.push({
-                diaID: selectDia.value,
+                diaID: diaEntrega, // Usar el mismo día para todos los detalles
                 productoID: selectProducto.value,
                 cantidad: inputCantidad.value
             });

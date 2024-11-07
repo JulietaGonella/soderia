@@ -28,7 +28,7 @@
             <div class="mb-3">
                 <label for="cliente" class="form-label">Cliente *</label>
                 <select class="form-select" id="cliente" required>
-                    
+
                 </select>
             </div>
 
@@ -38,13 +38,20 @@
                 </select>
             </div>
 
+            <!-- Selector de días de entrega fuera de la tabla de productos -->
+            <div class="mb-3">
+                <label for="diaEntrega" class="form-label">Día de Entrega *</label>
+                <select class="form-select" id="diaEntrega" required>
+                    <!-- Opciones se cargarán desde JavaScript -->
+                </select>
+            </div>
+
             <!-- Tabla para añadir productos -->
             <div class="mb-3">
                 <label class="form-label">Productos *</label>
                 <table class="table table-bordered" id="productosTable">
                     <thead>
                         <tr>
-                            <th>Días de Entrega</th>
                             <th>Producto</th>
                             <th>Cantidad</th>
                             <th>Acciones</th>
@@ -53,17 +60,13 @@
                     <tbody id="productosBody">
                         <tr>
                             <td>
-                                <select class="diasEntrega form-control" id="selectdias" required>
-                                    
-                                </select>
-                            </td>
-                            <td>
                                 <select class="producto form-control" id="selectproductos" required>
-                                    
+                                    <!-- Opciones de productos -->
                                 </select>
                             </td>
                             <td>
-                                <input type="number" class="form-control cantidadProducto" placeholder="Cantidad" id="cantidad" required>
+                                <input type="number" class="form-control cantidadProducto" placeholder="Cantidad"
+                                    id="cantidad" required>
                             </td>
                             <td>
                                 <button type="button" class="btn btn modificar" id="agregarproducto">Agregar</button>
@@ -72,6 +75,7 @@
                     </tbody>
                 </table>
             </div>
+
 
             <!-- Botón de agregar pedido -->
             <div class="d-flex justify-content-end me-4 mb-4">
