@@ -17,6 +17,8 @@ $(document).ready(function () {
                         <th scope="row" class="text-center">${pedido.IDPedido}</th>
                         <td class="text-center">${pedido.Cliente}</td>
                         <td class="text-center">${pedido.Direccion}</td>
+                        <td class="text-center">${pedido.Barrio}</td> <!-- Barrio -->
+                        <td class="text-center">${pedido.Localidad}</td> <!-- Localidad -->
                         <td class="text-center">${pedido.TipoPedido}</td>
                         <td class="text-center">${fechaFormateadaCreacion}</td>
                         <td class="text-center">${fechaFormateadaEntrega}</td>
@@ -69,10 +71,10 @@ function restaurarPedido(pedidoID, diaId) {
         type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({ pedidoID: pedidoID, diaId: diaId }),
-        success: function(response) {
+        success: function (response) {
             console.log(`Pedido ${pedidoID} restaurado correctamente`);
         },
-        error: function(error) {
+        error: function (error) {
             console.error('Error al restaurar el pedido:', error);
         }
     });

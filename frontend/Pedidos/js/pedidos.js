@@ -174,6 +174,8 @@ function cargarTabla(data) {
                     <td class="text-center">${pedido.IDPedido}</td>
                     <td>${pedido.Cliente}</td>
                     <td>${pedido.Direccion}</td>
+                    <td class="text-center">${pedido.Barrio}</td> <!-- Barrio -->
+                    <td class="text-center">${pedido.Localidad}</td> <!-- Localidad -->
                     <td class="text-center">${pedido.TipoPedido}</td>
                     <td class="text-center">${fechaFormateada}</td>
                     <td class="text-center">${pedido.DiaNombre}</td>

@@ -245,7 +245,7 @@ app.get('/dias', async (req, res) => {
   }
 });
 
-app.get('/pedidos', async (req, res) => {
+app.get('/pedidos', async (req, res) => { 
   try {
     const dardebaja = req.query.dardebaja === 'true'; // Comprueba el parámetro de consulta para dardebaja
     const cancelado = req.query.cancelado === 'true'; // Comprueba el parámetro de consulta para cancelados
@@ -268,14 +268,18 @@ app.get('/pedidos', async (req, res) => {
           dp.completado AS Completado, -- Incluimos el campo completado
           dp.IDestado AS IDestado, 
           e.descripcion AS EstadoDescripcion, -- Incluimos la descripción del estado
-          GROUP_CONCAT(tp.descripcion) AS TiposPedidos
+          GROUP_CONCAT(tp.descripcion) AS TiposPedidos,
+          b.nombre AS Barrio,  -- Incluimos el nombre del barrio
+          l.nombre AS Localidad  -- Incluimos el nombre de la localidad
       FROM pedidos p
       JOIN cliente c ON p.IDcliente = c.ID
       JOIN detallepedido dp ON p.ID = dp.IDpedido
       JOIN dias d ON dp.IDdias = d.ID
       JOIN tipos_pedido tp ON p.IDtipo_pedido = tp.ID
       LEFT JOIN periodos_baja pb ON dp.ID = pb.IDdetallepedido
-      LEFT JOIN estados e ON dp.IDestado = e.ID -- Hacemos el JOIN con la tabla estado
+      LEFT JOIN estados e ON dp.IDestado = e.ID
+      JOIN barrios b ON c.IDbarrio = b.ID  -- Hacemos el JOIN con la tabla barrios
+      JOIN localidades l ON b.IDlocalidad = l.ID  -- Hacemos el JOIN con la tabla localidades
       WHERE dp.dardebaja = ? AND dp.cancelado = ? AND dp.completado = ?
       GROUP BY 
           p.ID, 
@@ -290,7 +294,9 @@ app.get('/pedidos', async (req, res) => {
           pb.fecha_fin,
           dp.fechacancelado,
           dp.completado,
-          dp.IDestado -- Aseguramos que también se agrupe por IDestado
+          dp.IDestado,
+          b.nombre,  -- Incluimos la agrupación del barrio
+          l.nombre   -- Incluimos la agrupación de la localidad
     `, [dardebaja ? 1 : 0, cancelado ? 1 : 0, completado ? 1 : 0]);
 
     // Asegúrate de que los resultados no están vacíos
@@ -304,6 +310,7 @@ app.get('/pedidos', async (req, res) => {
     res.status(500).send('Error en el servidor');
   }
 });
+
 
 app.get('/tipos_pedido', async (req, res) => {
   try {
