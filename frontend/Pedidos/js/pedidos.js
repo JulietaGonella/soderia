@@ -130,23 +130,6 @@ function cargarTabla(data) {
     let tbody = $('#tablepedidosbody');
     tbody.empty(); // Limpia el contenido de la tabla
 
-    // Inicializa el DataTable si no está inicializado
-    if (!$.fn.DataTable.isDataTable('#table_id')) {
-        $("#table_id").DataTable({
-            "pageLength": 5,
-            lengthMenu: [
-                [5, 10, 25, 50],
-                [5, 10, 25, 50]
-            ],
-            "language": {
-                "url": "https://cdn.datatables.net/plug-ins/1.13.1/i18n/es-ES.json"
-            }
-        });
-    }
-
-    // Limpiar cualquier fila existente en la tabla
-    $("#table_id").DataTable().clear();
-
     // Si hay datos, cargarlos en el DataTable
     if (data.length > 0) {
         data.forEach(function (pedido) {
@@ -158,7 +141,7 @@ function cargarTabla(data) {
 
             // Verificar si el pedido es de tipo 'Unico' para no permitir dar de baja
             let botonBaja = '';
-            if (pedido.TipoPedido !== 'Unico') { 
+            if (pedido.TipoPedido !== 'Unico') {
                 if (pedido.FechaBaja) {
                     botonBaja = `<button type="button" class="btn btnbaja btn-sm" onclick="mostrarAlerta()">Dar de Baja</button>`;
                 } else {
@@ -189,8 +172,30 @@ function cargarTabla(data) {
             `);
         });
 
-        // Actualiza el DataTable con los nuevos datos
-        $("#table_id").DataTable().rows.add(tbody.find('tr')).draw();
+        // Inicializa el DataTable si no está inicializado
+        if (!$.fn.DataTable.isDataTable('#table_id')) {
+            $("#table_id").DataTable({
+                "pageLength": 5,
+                lengthMenu: [
+                    [5, 10, 25, 50],
+                    [5, 10, 25, 50]
+                ],
+                "language": {
+                    "url": "https://cdn.datatables.net/plug-ins/1.13.1/i18n/es-ES.json"
+                },
+                // Configuración para hacer que el buscador solo busque en la columna del nombre del cliente
+                "columnDefs": [
+                    {
+                        "targets": 1, // El índice de la columna de "Cliente" (asumiendo que es la segunda columna)
+                        "searchable": true // Habilita la búsqueda solo en esta columna
+                    },
+                    {
+                        "targets": "_all", // Deshabilita la búsqueda en todas las demás columnas
+                        "searchable": false
+                    }
+                ]
+            });
+        }
     } else {
         tbody.append('<tr><td colspan="7" class="text-center">No hay pedidos disponibles.</td></tr>');
     }
@@ -211,15 +216,15 @@ function verpedido(pedidoID, diaID) {
     window.location.href = `pedidodetalle.html?id=${pedidoID}&diaId=${diaID}`;
 }
 
-function cancelarPedido(pedidoID, diaID) { 
+function cancelarPedido(pedidoID, diaID) {
     // Buscar el pedido correspondiente en allPedidosData
     const pedido = allPedidosData.find(p => p.IDPedido === pedidoID && p.IDdias === diaID);
-    
+
     // Verificar si hay una fecha de baja establecida para el pedido
     if (pedido) {
         const fechaBaja = new Date(pedido.FechaBaja);
         const fechaHoy = new Date();
-        
+
         // Ajustar la fecha de "hoy" para comprobar si es mañana
         const fechaMañana = new Date();
         fechaMañana.setDate(fechaMañana.getDate() + 1); // Sumar un día a la fecha de hoy
@@ -237,10 +242,10 @@ function cancelarPedido(pedidoID, diaID) {
 
     const fechaCancelado = new Date().toISOString().split('T')[0]; // Obtener la fecha actual en formato YYYY-MM-DD
     $.ajax({
-        url: `http://localhost:3000/detallepedido/${pedidoID}/${diaID}`, 
+        url: `http://localhost:3000/detallepedido/${pedidoID}/${diaID}`,
         method: 'PUT',
         contentType: 'application/json',
-        data: JSON.stringify({ 
+        data: JSON.stringify({
             cancelado: true,
             fechacancelado: fechaCancelado // Añadir la fecha de cancelación
         }),

@@ -31,7 +31,18 @@ $(document).ready(function () {
         $('#table_id').DataTable({
             "pageLength": 5,
             lengthMenu: [[5, 10, 25, 50], [5, 10, 25, 50]],
-            "language": { "url": "https://cdn.datatables.net/plug-ins/1.13.1/i18n/es-ES.json" }
+            "language": { "url": "https://cdn.datatables.net/plug-ins/1.13.1/i18n/es-ES.json" },
+            // Configuración para hacer que el buscador solo busque en la columna del nombre del cliente
+            "columnDefs": [
+                {
+                    "targets": 1, // El índice de la columna de "Cliente" (asumiendo que es la segunda columna)
+                    "searchable": true // Habilita la búsqueda solo en esta columna
+                },
+                {
+                    "targets": "_all", // Deshabilita la búsqueda en todas las demás columnas
+                    "searchable": false
+                }
+            ]
         });
     }).fail(function () {
         console.error('Error al cargar los datos de los pedidos completados');

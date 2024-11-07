@@ -57,7 +57,18 @@ $(document).ready(function () {
                     ],
                     "language": {
                         "url": "https://cdn.datatables.net/plug-ins/1.13.1/i18n/es-ES.json"
-                    }
+                    },
+                    // Configuración para hacer que el buscador solo busque en la columna del nombre del cliente
+                    "columnDefs": [
+                        {
+                            "targets": 1, // El índice de la columna de "Cliente" (asumiendo que es la segunda columna)
+                            "searchable": true // Habilita la búsqueda solo en esta columna
+                        },
+                        {
+                            "targets": "_all", // Deshabilita la búsqueda en todas las demás columnas
+                            "searchable": false
+                        }
+                    ]
                 });
             }
         }).fail(function () {
