@@ -147,22 +147,9 @@ function deshabilitarFila(ultimaFila) {
     botonEditar.innerText = 'Editar';
     botonEditar.addEventListener('click', () => editarFila(ultimaFila));
 
-    // Crear botón de Eliminar
-    const botonEliminar = document.createElement('button');
-    botonEliminar.type = 'button';
-    botonEliminar.classList.add('btn', 'btn-danger', 'btn-sm', 'eliminar');
-    botonEliminar.innerText = 'Eliminar';
-    botonEliminar.addEventListener('click', () => eliminarFila(ultimaFila));
-
     // Agregar los botones a la celda de acciones
     const tdAccion = ultimaFila.querySelector('td:last-child');
     tdAccion.appendChild(botonEditar);
-    tdAccion.appendChild(botonEliminar);
-}
-
-// Eliminar fila: Remover la fila de la tabla
-function eliminarFila(fila) {
-    fila.remove();
 }
 
 // Agregar nueva fila en la tabla de productos solo si los datos están completos
