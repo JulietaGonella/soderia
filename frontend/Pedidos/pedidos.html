@@ -28,6 +28,16 @@
             <a href="pedidosdebaja.html" class="btn eliminados btn-sm">Pedidos Dados de Baja y Cancelados</a>
         </div>
 
+        <!-- Filtro por Fecha de Creación -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h6>Selecciona el rango de fechas:</h6>
+                <div class="d-flex">
+                    <input type="date" id="fecha-inicio" class="form-control me-2" placeholder="Desde">
+                    <input type="date" id="fecha-fin" class="form-control" placeholder="Hasta">
+                </div>
+            </div>
+        </div>
 
         <!-- Filtro por Día -->
         <div class="row mb-4">
@@ -66,14 +76,16 @@
                                         <th scope="col" class="text-center">#</th>
                                         <th scope="col" class="text-center">Cliente</th>
                                         <th scope="col" class="text-center">Dirección</th>
-                                        <th scope="col" class="text-center">Barrio</th> <!-- Nueva columna para Barrio -->
-                                        <th scope="col" class="text-center">Localidad</th> <!-- Nueva columna para Localidad -->
+                                        <th scope="col" class="text-center">Barrio</th>
+                                        <!-- Nueva columna para Barrio -->
+                                        <th scope="col" class="text-center">Localidad</th>
+                                        <!-- Nueva columna para Localidad -->
                                         <th scope="col" class="text-center">Tipo de pedido</th>
                                         <th scope="col" class="text-center">Fecha de creacion</th>
                                         <th scope="col" class="text-center">Dia de entrega</th>
                                         <th scope="col" class="text-center acciones">Acciones</th>
                                     </tr>
-                                </thead>                                
+                                </thead>
                                 <tbody id="tablepedidosbody">
                                     <!-- Agrega más filas según sea necesario -->
                                 </tbody>

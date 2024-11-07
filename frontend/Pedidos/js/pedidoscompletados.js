@@ -1,7 +1,4 @@
-$(document).ready(function () {
-    // Recargar la página para realizar la acción una vez
-    location.reload();
-    
+$(document).ready(function () {  
     // Cargar todos los pedidos (regulares y únicos)
     $.get('http://localhost:3000/pedidos?completado=true', function (data) {
         let tableBody = $('#tablepedidosbody');

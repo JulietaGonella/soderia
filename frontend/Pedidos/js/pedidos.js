@@ -130,6 +130,7 @@ function cargarTabla(data) {
     let tbody = $('#tablepedidosbody');
     tbody.empty(); // Limpia el contenido de la tabla
 
+
     // Si hay datos, cargarlos en el DataTable
     if (data.length > 0) {
         data.forEach(function (pedido) {
