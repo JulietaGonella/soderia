@@ -52,41 +52,87 @@ $(document).ready(function () {
     restaurarPedidosRegulares();
 });
 
-// Automatización para restaurar pedidos regulares
+// pedidoscompletados.js: Automatización para restaurar pedidos regulares
 function restaurarPedidosRegulares() {
     const hoy = new Date();
-    const fechaHoy = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`; // Formato YYYY-MM-DD
+    const diaHoy = String(hoy.getDate()).padStart(2, '0');
+    const mesHoy = String(hoy.getMonth() + 1).padStart(2, '0');
+    const anioHoy = hoy.getFullYear();
+    const fechaHoy = `${anioHoy}-${mesHoy}-${diaHoy}`; // Formato YYYY-MM-DD
 
-    // Revisión diaria para restaurar pedidos regulares al día siguiente de su entrega
-    $.get('http://localhost:3000/pedidos?completado=true', function (data) {
-        data.forEach(function (pedido) {
-            if (pedido.TipoPedido === 'Regular') {
-                let fechaEntrega = new Date(pedido.FechaEntrega);
-                let diferencia = Math.floor((hoy - fechaEntrega) / (1000 * 60 * 60 * 24));
+    // Comprobar pedidos completados diariamente para restaurar pedidos regulares al día siguiente de su entrega
+    if (hoy.getHours() >= 0) {
+        $.get('http://localhost:3000/pedidos?completado=true', function (data) {
+            data.forEach(function (pedido) {
+                if (pedido.TipoPedido === 'Regular') {
+                    let fechaEntrega = new Date(pedido.FechaEntrega);
+                    fechaEntrega.setDate(fechaEntrega.getDate() + 1); // Agregar un día para restauración al día siguiente
+                    let diaEntrega = String(fechaEntrega.getDate()).padStart(2, '0');
+                    let mesEntrega = String(fechaEntrega.getMonth() + 1).padStart(2, '0');
+                    let anioEntrega = fechaEntrega.getFullYear();
+                    let fechaEntregaStr = `${anioEntrega}-${mesEntrega}-${diaEntrega}`; // Formato YYYY-MM-DD
 
-                // Restaurar automáticamente si ha pasado un día desde la fecha de entrega
-                if (diferencia >= 1) {
-                    restaurarPedido(pedido.IDPedido, pedido.IDdias);
+                    if (fechaEntregaStr === fechaHoy) {
+                        restaurarPedido(pedido.IDPedido, pedido.IDdias, false); // Restaurar sin mostrar la alerta
+                    }
                 }
-            }
+            });
+        }).fail(function () {
+            console.error('Error al cargar los datos de los pedidos regulares');
         });
-    }).fail(function () {
-        console.error('Error al cargar los datos de los pedidos regulares');
-    });
+    }
 }
 
-// Función de restauración de pedidos
-function restaurarPedido(pedidoID, diaId) {
+// Función para restaurar un pedido
+function restaurarPedido(pedidoID, diaID, mostrarAlerta) {
+    console.log('ID Pedido:', pedidoID, 'Día ID:', diaID);
+
+    if (mostrarAlerta) {
+        // Mostrar la alerta si mostrarAlerta es true
+        Swal.fire({
+            title: 'Confirmar Restauración',
+            text: "¿Estás seguro de que deseas restaurar este pedido?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, restaurar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                enviarRestauracion(pedidoID, diaID);
+            }
+        });
+    } else {
+        // Si no se requiere la alerta, simplemente restaurar
+        enviarRestauracion(pedidoID, diaID);
+    }
+}
+
+// Función para enviar la restauración al servidor
+function enviarRestauracion(pedidoID, diaID) {
     $.ajax({
-        url: `http://localhost:3000/restaurarpedido`,
-        type: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({ pedidoID: pedidoID, diaId: diaId }),
+        url: `http://localhost:3000/restaurar-pedido/${pedidoID}/${diaID}`,
+        method: 'POST',
         success: function (response) {
-            console.log(`Pedido ${pedidoID} restaurado correctamente`);
+            console.log('Pedido restaurado:', response);
+            Swal.fire({
+                title: 'Restauración Exitosa',
+                text: 'El pedido ha sido restaurado.',
+                icon: 'success',
+                confirmButtonText: 'Aceptar'
+            }).then(() => {
+                location.reload(); // Recargar la página
+            });
         },
         error: function (error) {
             console.error('Error al restaurar el pedido:', error);
+            Swal.fire({
+                title: 'Error',
+                text: 'No se pudo restaurar el pedido. Intenta nuevamente.',
+                icon: 'error',
+                confirmButtonText: 'Aceptar'
+            });
         }
     });
 }
