@@ -17,7 +17,7 @@ $(document).ready(function () {
                         <td>${cliente.direccion}</td>    <!-- Dirección -->
                         <td class="text-center">
                             <a href="editar.html?id=${cliente.ID}" class="btn btn-sm me-2 modificar">Modificar</a>
-                            <button type="button" class="btn btn-danger btn-sm" data-id="${cliente.ID}" onclick="eliminarCliente(${cliente.ID})">Eliminar</button>
+                            <button type="button" class="btn btn-danger btn-sm" data-id="${cliente.ID}" onclick="eliminarCliente(${cliente.ID})">Desactivar</button>
                         </td>
                     </tr>
                 `);
@@ -55,12 +55,12 @@ $(document).ready(function () {
 function eliminarCliente(id) {
     Swal.fire({
         title: '¿Estás seguro?',
-        text: 'Este cliente será marcado como eliminado, pero podrás recuperarlo más tarde.',
+        text: 'Este cliente será marcado como desactivar, pero podrás activarlo más tarde.',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Sí, eliminar',
+        confirmButtonText: 'Sí, desactivar',
         cancelButtonText: 'No, cancelar'
     }).then((result) => {
         if (result.isConfirmed) {
