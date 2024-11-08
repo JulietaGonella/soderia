@@ -57,12 +57,12 @@ function restaurarCliente(button) {
     // Usar SweetAlert para confirmar la restauración
     Swal.fire({
         title: '¿Estás seguro?',
-        text: "Este cliente será restaurado y ya no estará eliminado.",
+        text: "Este cliente será restaurado y ya no estará desacivado.",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Sí, restaurar',
+        confirmButtonText: 'Sí, activar',
         cancelButtonText: 'Cancelar'
     }).then((result) => {
         if (result.isConfirmed) {
@@ -76,7 +76,7 @@ function restaurarCliente(button) {
                     // Mostrar mensaje de éxito y recargar la tabla
                     Swal.fire(
                         'Restaurado!',
-                        'El cliente ha sido restaurado.',
+                        'El cliente ha sido activado.',
                         'success'
                     ).then(() => {
                         location.reload(); // Recargar la página o volver a cargar los datos
