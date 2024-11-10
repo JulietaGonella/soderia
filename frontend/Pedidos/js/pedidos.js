@@ -273,6 +273,16 @@ function darDeBaja(pedidoID, diaID) {
     window.location.href = `dardebaja.html?id=${pedidoID}&diaId=${diaID}`;
 }
 
+function mostrarAlerta() {
+    Swal.fire({
+        title: 'Atención',
+        text: 'Este pedido ya ha sido dado de baja y no puede ser dado de baja nuevamente.',
+        icon: 'warning',
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#3085d6'
+    });
+}
+
 function editarpedido(pedidoID, diaID) {
     window.location.href = `editar.html?id=${pedidoID}&diaId=${diaID}`;
 }
