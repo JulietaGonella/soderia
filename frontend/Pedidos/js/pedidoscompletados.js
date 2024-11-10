@@ -1,8 +1,8 @@
-$(document).ready(function () {  
+$(document).ready(function () {
     // Cargar todos los pedidos (regulares y únicos)
     $.get('http://localhost:3000/pedidos?completado=true', function (data) {
         let tableBody = $('#tablepedidosbody');
-        tableBody.empty(); // Limpia el contenido de la tabla
+        tableBody.empty();
 
         if (data.length > 0) {
             data.forEach(function (pedido) {
@@ -17,8 +17,8 @@ $(document).ready(function () {
                         <th scope="row" class="text-center">${pedido.IDPedido}</th>
                         <td class="text-center">${pedido.Cliente}</td>
                         <td class="text-center">${pedido.Direccion}</td>
-                        <td class="text-center">${pedido.Barrio}</td> <!-- Barrio -->
-                        <td class="text-center">${pedido.Localidad}</td> <!-- Localidad -->
+                        <td class="text-center">${pedido.Barrio}</td>
+                        <td class="text-center">${pedido.Localidad}</td>
                         <td class="text-center">${pedido.TipoPedido}</td>
                         <td class="text-center">${fechaFormateadaCreacion}</td>
                         <td class="text-center">${fechaFormateadaEntrega}</td>
@@ -32,27 +32,20 @@ $(document).ready(function () {
             "pageLength": 5,
             lengthMenu: [[5, 10, 25, 50], [5, 10, 25, 50]],
             "language": { "url": "https://cdn.datatables.net/plug-ins/1.13.1/i18n/es-ES.json" },
-            // Configuración para hacer que el buscador solo busque en la columna del nombre del cliente
             "columnDefs": [
-                {
-                    "targets": 1, // El índice de la columna de "Cliente" (asumiendo que es la segunda columna)
-                    "searchable": true // Habilita la búsqueda solo en esta columna
-                },
-                {
-                    "targets": "_all", // Deshabilita la búsqueda en todas las demás columnas
-                    "searchable": false
-                }
+                { "targets": 1, "searchable": true },
+                { "targets": "_all", "searchable": false }
             ]
         });
     }).fail(function () {
         console.error('Error al cargar los datos de los pedidos completados');
     });
 
-    // Llamar a la función de restauración automática de pedidos regulares al día siguiente
+    // Llamada a restauración si no se ha realizado hoy
     restaurarPedidosRegulares();
 });
 
-// pedidoscompletados.js: Automatización para restaurar pedidos regulares
+// Función que verifica y restaura los pedidos regulares si la fecha de entrega + 1 es igual a la fecha de hoy
 function restaurarPedidosRegulares() {
     const hoy = new Date();
     const diaHoy = String(hoy.getDate()).padStart(2, '0');
@@ -60,35 +53,38 @@ function restaurarPedidosRegulares() {
     const anioHoy = hoy.getFullYear();
     const fechaHoy = `${anioHoy}-${mesHoy}-${diaHoy}`; // Formato YYYY-MM-DD
 
-    // Comprobar pedidos completados diariamente para restaurar pedidos regulares al día siguiente de su entrega
-    if (hoy.getHours() >= 0) {
-        $.get('http://localhost:3000/pedidos?completado=true', function (data) {
-            data.forEach(function (pedido) {
-                if (pedido.TipoPedido === 'Regular') {
-                    let fechaEntrega = new Date(pedido.FechaEntrega);
-                    fechaEntrega.setDate(fechaEntrega.getDate() + 1); // Agregar un día para restauración al día siguiente
-                    let diaEntrega = String(fechaEntrega.getDate()).padStart(2, '0');
-                    let mesEntrega = String(fechaEntrega.getMonth() + 1).padStart(2, '0');
-                    let anioEntrega = fechaEntrega.getFullYear();
-                    let fechaEntregaStr = `${anioEntrega}-${mesEntrega}-${diaEntrega}`; // Formato YYYY-MM-DD
+    
+    // Verificar pedidos regulares completados
+    $.get('http://localhost:3000/pedidos?completado=true', function (data) {
+        data.forEach(function (pedido) {
+            if (pedido.TipoPedido === 'Regular') {
+                let fechaEntrega = new Date(pedido.FechaEntrega);
+                
+                // Sumar un día a la fecha de entrega
+                fechaEntrega.setDate(fechaEntrega.getDate() + 1);
 
-                    if (fechaEntregaStr === fechaHoy) {
-                        restaurarPedido(pedido.IDPedido, pedido.IDdias, false); // Restaurar sin mostrar la alerta
-                    }
+                let diaEntrega = String(fechaEntrega.getDate()).padStart(2, '0');
+                let mesEntrega = String(fechaEntrega.getMonth() + 1).padStart(2, '0');
+                let anioEntrega = fechaEntrega.getFullYear();
+                let fechaEntregaStr = `${anioEntrega}-${mesEntrega}-${diaEntrega}`; // Formato YYYY-MM-DD
+
+                // Comparar si la fecha de hoy es igual a la fecha de entrega + 1
+                if (fechaEntregaStr === fechaHoy) {
+                    restaurarPedido(pedido.IDPedido, pedido.IDdias, false); // Restaurar sin mostrar la alerta
                 }
-            });
-        }).fail(function () {
-            console.error('Error al cargar los datos de los pedidos regulares');
+            }
         });
-    }
+
+        // Almacenar la fecha de restauración en el localStorage para evitar repetirla
+        localStorage.setItem('fechaRestauracion', fechaHoy);
+    }).fail(function () {
+        console.error('Error al cargar los datos de los pedidos regulares');
+    });
 }
 
-// Función para restaurar un pedido
+// Función que maneja la restauración de un pedido
 function restaurarPedido(pedidoID, diaID, mostrarAlerta) {
-    console.log('ID Pedido:', pedidoID, 'Día ID:', diaID);
-
     if (mostrarAlerta) {
-        // Mostrar la alerta si mostrarAlerta es true
         Swal.fire({
             title: 'Confirmar Restauración',
             text: "¿Estás seguro de que deseas restaurar este pedido?",
@@ -104,16 +100,17 @@ function restaurarPedido(pedidoID, diaID, mostrarAlerta) {
             }
         });
     } else {
-        // Si no se requiere la alerta, simplemente restaurar
         enviarRestauracion(pedidoID, diaID);
     }
 }
 
-// Función para enviar la restauración al servidor
+// Enviar solicitud al backend para restaurar el pedido
 function enviarRestauracion(pedidoID, diaID) {
     $.ajax({
-        url: `http://localhost:3000/restaurar-pedido/${pedidoID}/${diaID}`,
+        url: `http://localhost:3000/restaurarpedido`,
         method: 'POST',
+        data: JSON.stringify({ pedidoID }), // Enviar el ID del pedido
+        contentType: 'application/json',
         success: function (response) {
             console.log('Pedido restaurado:', response);
             Swal.fire({
@@ -122,7 +119,7 @@ function enviarRestauracion(pedidoID, diaID) {
                 icon: 'success',
                 confirmButtonText: 'Aceptar'
             }).then(() => {
-                location.reload(); // Recargar la página
+                location.reload(); // Recargar la página para reflejar los cambios
             });
         },
         error: function (error) {
