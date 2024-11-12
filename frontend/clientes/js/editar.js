@@ -1,43 +1,47 @@
-$(document).ready(function () { 
+// Ejecuta el código una vez que el documento esté completamente cargado.
+$(document).ready(function () {  
+    // Obtiene el parámetro 'id' de la URL para identificar al cliente.
     const urlParams = new URLSearchParams(window.location.search);
-    const clienteId = urlParams.get('id'); // Obtener ID del cliente desde la URL
+    const clienteId = urlParams.get('id'); // Extrae el ID del cliente desde la URL
 
+    // Variables para almacenar la localidad y el barrio original del cliente.
     let originalIdbarrio;
     let originalIdlocalidad;
 
-    // Cargar localidades y barrios al inicio
+    // Realiza llamadas para cargar las listas de localidades y barrios al inicio.
     $.when(
-        $.get('http://localhost:3000/localidades'),
-        $.get('http://localhost:3000/barrios')
+        $.get('http://localhost:3000/localidades'), // Solicita la lista de localidades.
+        $.get('http://localhost:3000/barrios') // Solicita la lista de barrios.
     ).done(function (localidadList, barrioList) {
-        // Cargar localidades en el dropdown
+        // Carga las localidades en el menú desplegable.
         localidadList[0].forEach(localidad => {
-            $('#localidad').append(new Option(localidad.localidad, localidad.ID)); // Cambia 'localidad' por 'nombre'
+            $('#localidad').append(new Option(localidad.localidad, localidad.ID)); // Usa 'localidad' como etiqueta.
         });
 
-        // Cargar barrios en el dropdown
+        // Carga los barrios en el menú desplegable.
         barrioList[0].forEach(barrio => {
-            $('#barrio').append(new Option(barrio.barrio, barrio.ID)); // Usar 'barrio' como etiqueta
+            $('#barrio').append(new Option(barrio.barrio, barrio.ID)); // Usa 'barrio' como etiqueta.
         });
 
-        // Cargar datos del cliente si se proporciona el ID
+        // Si se proporciona un ID de cliente, carga los datos de ese cliente.
         if (clienteId) {
             $.get(`http://localhost:3000/cliente/${clienteId}`, function (cliente) {
                 console.log("Datos del cliente recibidos:", cliente);
 
+                // Almacena la localidad y el barrio originales del cliente.
                 originalIdbarrio = cliente.IDbarrio;
-                originalIdlocalidad = cliente.IDlocalidad; // Guardar la localidad original
+                originalIdlocalidad = cliente.IDlocalidad;
 
-                // Rellenar el formulario con los datos del cliente
-                $('#id').val(cliente.IDCliente); // Asumiendo que 'IDCliente' es devuelto correctamente
+                // Rellena el formulario con los datos del cliente.
+                $('#id').val(cliente.IDCliente); // Asume que 'IDCliente' es un campo devuelto.
                 $('#nombreyapellido').val(cliente.nombre);
                 $('#telefono').val(cliente.telefono);
                 $('#direccion').val(cliente.direccion);
 
-                // Establecer localidad
+                // Establece la localidad seleccionada.
                 $('#localidad').val(originalIdlocalidad); 
 
-                // Filtrar los barrios por localidad seleccionada
+                // Filtra los barrios según la localidad seleccionada.
                 cargarBarriosPorLocalidad(originalIdlocalidad, originalIdbarrio);
             }).fail(function (jqXHR, textStatus, errorThrown) {
                 console.error("Error al cargar los datos del cliente:", textStatus, errorThrown);
@@ -51,18 +55,18 @@ $(document).ready(function () {
         Swal.fire('Error', 'No se pudieron cargar las localidades o barrios.', 'error');
     });
 
-    // Función para cargar barrios según la localidad seleccionada
+    // Función para cargar barrios específicos según la localidad seleccionada.
     function cargarBarriosPorLocalidad(localidadId, idBarrio) {
-        // Filtrar los barrios por localidad
+        // Filtra los barrios por la localidad especificada.
         $.get(`http://localhost:3000/barrios?IDlocalidad=${localidadId}`, function(barrioList) {
-            $('#barrio').empty().append(new Option("Seleccione un barrio", "", true, true)); // Opción por defecto
+            $('#barrio').empty().append(new Option("Seleccione un barrio", "", true, true)); // Opción predeterminada.
 
             barrioList.forEach(barrio => {
-                $('#barrio').append(new Option(barrio.barrio, barrio.ID)); // Usar 'barrio' como etiqueta
+                $('#barrio').append(new Option(barrio.barrio, barrio.ID)); // Agrega barrios al menú.
 
-                // Seleccionar el barrio correspondiente al cliente
+                // Selecciona el barrio correspondiente al cliente si existe.
                 if (barrio.ID === idBarrio) {
-                    $('#barrio').val(idBarrio); // Seleccionar el barrio
+                    $('#barrio').val(idBarrio); // Selecciona el barrio.
                 }
             });
         }).fail(function(jqXHR, textStatus, errorThrown) {
@@ -71,15 +75,15 @@ $(document).ready(function () {
         });
     }
 
-    // Manejar el cambio en la localidad para recargar los barrios
+    // Maneja el cambio en la localidad para actualizar la lista de barrios.
     $('#localidad').change(function() {
-        const localidadId = $(this).val(); // Obtener la localidad seleccionada
-        cargarBarriosPorLocalidad(localidadId); // Llamar a cargar barrios cuando cambia la localidad
+        const localidadId = $(this).val(); // Obtiene el ID de la localidad seleccionada.
+        cargarBarriosPorLocalidad(localidadId); // Llama a la función para actualizar barrios.
     });
 
-    // Manejar el envío del formulario para actualizar el cliente
+    // Maneja el envío del formulario para actualizar los datos del cliente.
     $('#clienteEditForm').on('submit', function(event) {
-        event.preventDefault(); // Prevenir el envío por defecto
+        event.preventDefault(); // Previene el envío predeterminado del formulario.
 
         const clienteData = {
             nombre: $('#nombreyapellido').val(),
@@ -88,15 +92,15 @@ $(document).ready(function () {
             direccion: $('#direccion').val()
         };
 
-        // Enviar datos al servidor para actualizar el cliente
+        // Envía los datos actualizados del cliente al servidor.
         $.ajax({
             url: `http://localhost:3000/cliente/${clienteId}`,
-            type: 'PUT',
+            type: 'PUT', // Método PUT para actualizar.
             contentType: 'application/json',
             data: JSON.stringify(clienteData),
             success: function(response) {
                 Swal.fire('Éxito', 'Cliente actualizado correctamente.', 'success').then(() => {
-                    // Redirigir a la página de clientes después de un segundo
+                    // Redirige a la página de clientes después de la confirmación.
                     window.location.href = 'clientes.html';
                 });
             },

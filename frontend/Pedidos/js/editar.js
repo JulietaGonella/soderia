@@ -44,19 +44,19 @@ document.addEventListener('DOMContentLoaded', async function () {
     function cargarProductosExistentes(pedido) {
         pedido.forEach(producto => {
             const row = `
-        <tr>
-            <td>
-                <div id="productoContainer-${producto.IDDetalle}"></div>
-            </td>
-            <td>
-                <input type="number" class="form-control cantidadProducto" value="${producto.cantidad}" placeholder="Cantidad" disabled>
-            </td>
-            <td>
-                <input type="hidden" class="idDetalle" value="${producto.IDDetalle}">
-                <button type="button" class="btn btn modificar btn-sm">Editar</button>
-            </td>
-        </tr>
-        `;
+                <tr>
+                    <td>
+                        <div id="productoContainer-${producto.IDDetalle}"></div>
+                    </td>
+                    <td>
+                        <input type="number" class="form-control cantidadProducto" value="${producto.cantidad}" placeholder="Cantidad" disabled>
+                    </td>
+                    <td>
+                        <input type="hidden" class="idDetalle" value="${producto.IDDetalle}">
+                        <button type="button" class="btn btn modificar btn-sm">Editar</button>
+                    </td>
+                </tr>
+            `;
             $('#productosBody').append(row);
             cargarProductosSelect(`#productoContainer-${producto.IDDetalle}`, producto.IDProducto);
         });
@@ -69,18 +69,18 @@ document.addEventListener('DOMContentLoaded', async function () {
     function agregarFilaVacia() {
         filaId++; // Incrementar el id para cada nueva fila
         const emptyRow = `
-    <tr>
-        <td>
-            <div id="productoContainer-${filaId}"></div>
-        </td>
-        <td>
-            <input type="number" class="form-control cantidadProducto" placeholder="Cantidad">
-        </td>
-        <td>
-            <button type="button" class="btn btn modificar btn-sm">Agregar</button>
-        </td>
-    </tr>
-    `;
+            <tr>
+                <td>
+                    <div id="productoContainer-${filaId}"></div>
+                </td>
+                <td>
+                    <input type="number" class="form-control cantidadProducto" placeholder="Cantidad">
+                </td>
+                <td>
+                    <button type="button" class="btn btn modificar btn-sm">Agregar</button>
+                </td>
+            </tr>
+        `;
         $('#productosBody').append(emptyRow);
 
         // Cargar el select para la nueva fila vacía (si es necesario)
@@ -127,7 +127,6 @@ document.addEventListener('DOMContentLoaded', async function () {
             cantidadInput.prop('disabled', true);
         }
     });
-
 
     // Enviar los cambios al servidor
     $('#pedidoFormeditar').on('submit', function (event) {
@@ -243,21 +242,23 @@ async function cargarTiposPedido(selectedId = null) {
     tipoPedidoSelect.appendChild(new Option('Selecciona un tipo de pedido', '', true, true));
 
     tiposPedido.forEach(tipo => {
-        const option = new Option(tipo.descripcion, tipo.ID, false, tipo.ID === selectedId);
+        const option = new Option(tipo.nombre, tipo.ID, false, tipo.ID === selectedId);
         tipoPedidoSelect.appendChild(option);
     });
 }
 
+// Cargar días
 async function cargarDiasSelect(selectedId = null) {
     const response = await fetch('http://localhost:3000/dias');
     const dias = await response.json();
-    const diaSelect = document.getElementById('diasEntregaContainer');
+    const diasSelect = document.getElementById('dias');
 
-    diaSelect.innerHTML = ''; // Limpiar opciones previas
-    diaSelect.appendChild(new Option('Selecciona un día', '', true, true));
+    // Limpiar opciones previas
+    diasSelect.innerHTML = '';
+    diasSelect.appendChild(new Option('Selecciona un día', '', true, true));
 
     dias.forEach(dia => {
         const option = new Option(dia.nombre, dia.ID, false, dia.ID === selectedId);
-        diaSelect.appendChild(option);
+        diasSelect.appendChild(option);
     });
 }

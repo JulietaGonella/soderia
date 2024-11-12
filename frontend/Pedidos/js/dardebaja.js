@@ -1,39 +1,41 @@
-$(document).ready(function () {
+$(document).ready(function () { 
+    // Obtiene los parámetros de la URL, como idPedido y diaId, y los almacena en constantes
     const urlParams = new URLSearchParams(window.location.search);
-    const idPedido = urlParams.get('id');
-    const diaId = urlParams.get('diaId');
+    const idPedido = urlParams.get('id'); // ID del pedido
+    const diaId = urlParams.get('diaId'); // ID del día
 
+    // Establece el valor de idPedido en el campo de entrada con ID "idpedido"
     $('#idpedido').val(idPedido);
-    let pedidoData = null; // Inicializamos la variable aquí
+    let pedidoData = null; // Inicializa la variable para almacenar datos del pedido
 
-    // Obtener detalles del pedido por ID y diaId
+    // Realiza una solicitud AJAX para obtener los detalles del pedido basado en idPedido y diaId
     $.ajax({
-        url: `http://localhost:3000/pedidos/${idPedido}/${diaId}`,
-        method: 'GET',
+        url: `http://localhost:3000/pedidos/${idPedido}/${diaId}`, // URL de la API
+        method: 'GET', // Método de solicitud HTTP
         success: function (data) {
             if (data.length > 0) {
-                pedidoData = data;
-                let detallesIds = data.map(detalle => detalle.IDDetalle).join(', ');
-                $('#iddetallepedido').val(detallesIds);
+                pedidoData = data; // Asigna los datos del pedido a la variable pedidoData
+                let detallesIds = data.map(detalle => detalle.IDDetalle).join(', '); // Crea una lista de IDs de detalle
+                $('#iddetallepedido').val(detallesIds); // Asigna estos IDs al campo de entrada
 
-                // Mostrar el selector de opción para baja
+                // Muestra el selector de opción para baja
                 $('#opcion-baja').show();
-                $('#fechas-baja').hide();
+                $('#fechas-baja').hide(); // Oculta campos de fechas al inicio
                 $('#labefechafin').hide();
                 $('#fecha-inicio').hide();
                 $('#fecha-fin').hide();
 
-                // Verifica el tipo de pedido
+                // Verifica el tipo de pedido y ajusta el campo de fecha según el tipo
                 switch (data[0].TipoPedido) {
                     case 'Unico':
-                        $('#fecha-inicio').show(); // Mostrar solo el campo de fecha de inicio
+                        $('#fecha-inicio').show(); // Muestra solo el campo de fecha de inicio
                         break;
                     case 'Indefinido':
-                        $('#fecha-inicio').val(new Date().toISOString().split('T')[0]); // Establecer fecha actual
+                        $('#fecha-inicio').val(new Date().toISOString().split('T')[0]); // Fecha actual por defecto
                         break;
                     case 'Regular':
                     case 'Por Fechas':
-                        $('#fecha-inicio').show(); // Mostrar campo de fecha de inicio
+                        $('#fecha-inicio').show(); // Muestra el campo de fecha de inicio
                         break;
                 }
             } else {
@@ -45,53 +47,52 @@ $(document).ready(function () {
         }
     });
 
-    // Manejo de opciones de baja
+    // Controla el cambio de opción de baja y ajusta la visibilidad de los campos de fecha
     $('#opcion-baja').change(function () {
         const opcionBaja = $(this).val();
         if (opcionBaja === 'por-fecha') {
-            $('#fechas-baja').show();
+            $('#fechas-baja').show(); // Muestra los campos de fecha
             const tipoPedido = pedidoData && pedidoData.length > 0 ? pedidoData[0].TipoPedido : '';
 
             if (tipoPedido === 'Unico') {
-                $('#fecha-fin').hide(); // Oculta el campo de fecha fin si es único
+                $('#fecha-fin').hide(); // Oculta el campo de fecha fin si el tipo es 'Unico'
                 $('#labefechafin').hide();
             } else {
                 $('#fecha-fin').show(); // Muestra el campo de fecha fin
                 $('#labefechafin').show();
             }
         } else {
-            $('#fechas-baja').hide();
-            $('#fecha-inicio').val(''); // Limpiar campo de fecha de inicio
-            $('#fecha-fin').val('');    // Limpiar campo de fecha fin
+            $('#fechas-baja').hide(); // Oculta los campos de fecha
+            $('#fecha-inicio').val(''); // Limpia el campo de fecha de inicio
+            $('#fecha-fin').val('');    // Limpia el campo de fecha de fin
             $('#labefechafin').hide();
         }
     });
 
-    // Inicializar los campos de fechas de baja
+    // Inicializa los campos de fechas de baja y establece la fecha mínima como la fecha actual
     $('#fechas-baja').hide();
-
     const hoy = new Date();
     const dd = String(hoy.getDate()).padStart(2, '0');
-    const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+    const mm = String(hoy.getMonth() + 1).padStart(2, '0'); // Enero es 0
     const yyyy = hoy.getFullYear();
-    const fechaMinima = `${yyyy}-${mm}-${dd}`;
-
+    const fechaMinima = `${yyyy}-${mm}-${dd}`; // Fecha mínima en formato 'YYYY-MM-DD'
     $('#fecha-inicio').attr('min', fechaMinima);
     $('#fecha-fin').attr('min', fechaMinima);
 
-    // Manejo del formulario para dar de baja el pedido
+    // Manejo del envío del formulario para dar de baja el pedido
     $('#form-dar-baja').submit(function (event) {
-        event.preventDefault();
+        event.preventDefault(); // Previene el comportamiento predeterminado de enviar el formulario
 
-        const opcionBaja = $('#opcion-baja').val();
+        const opcionBaja = $('#opcion-baja').val(); // Obtiene la opción de baja seleccionada
         let bajaIndefinida = 0;
         let fechaInicio = null;
         let fechaFin = null;
 
         if (opcionBaja === 'indefinido') {
-            bajaIndefinida = 1;
-            fechaInicio = new Date(); // Fecha actual
+            bajaIndefinida = 1; // Marca la baja como indefinida
+            fechaInicio = new Date(); // Establece la fecha actual
         } else if (opcionBaja === 'por-fecha') {
+            // Valida y obtiene las fechas de inicio y fin
             fechaInicio = $('#fecha-inicio').val() ? new Date($('#fecha-inicio').val()) : null;
             fechaFin = $('#fecha-fin').val() ? new Date($('#fecha-fin').val()) : null;
 
@@ -114,6 +115,7 @@ $(document).ready(function () {
             }
         }
 
+        // Crea el objeto con los datos que se enviarán a la API
         let datosAEnviar = {
             idpedido: idPedido,
             iddia: diaId,
@@ -123,11 +125,12 @@ $(document).ready(function () {
             detalles: $('#iddetallepedido').val().split(',').map(id => ({ ID: id.trim() }))
         };
 
+        // Enviar datos a la API para registrar la baja del pedido
         $.ajax({
-            url: 'http://localhost:3000/periodos_baja',
-            method: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify(datosAEnviar),
+            url: 'http://localhost:3000/periodos_baja', // URL de la API
+            method: 'POST', // Método de solicitud HTTP
+            contentType: 'application/json', // Tipo de contenido
+            data: JSON.stringify(datosAEnviar), // Datos en formato JSON
             success: function (response) {
                 Swal.fire({
                     icon: 'success',
@@ -135,7 +138,7 @@ $(document).ready(function () {
                     text: 'Pedido dado de baja correctamente.',
                     confirmButtonText: 'Aceptar'
                 }).then(() => {
-                    window.location.href = 'pedidos.html';
+                    window.location.href = 'pedidos.html'; // Redirige a la página de pedidos
                 });
             },
             error: function (error) {
@@ -148,5 +151,4 @@ $(document).ready(function () {
             }
         });
     });
-
 });
